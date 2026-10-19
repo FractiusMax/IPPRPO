@@ -1,0 +1,53 @@
+# Сборка Maven — генерируется заново при каждом mvn clean/package,
+# в систему контроля версий не коммитится
+target/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+bin/
+out/
+.settings/
+.classpath
+.project
+
+# Прочее
+*.log
+
+_lab3_source_xml/
+
+_lab3_source.zip/
+
+_lab4_source.zip/
+
+_lab4_src/
+
+_lab4_plain.txt/
+
+_lab3_src/
+
+lib/
+
+_lab3_source_xml/
+
+_lab3_source.zip/
+
+_lab4_source.zip/
+
+_lab4_src/
+
+_lab4_plain.txt/
+
+_lab3_src/
+
+lib/
+
+# Dobavleno dlya chistoty repo
+*.bak
+_lab*.zip
+_lab*.docx
+_lab*.txt
+_tools/
