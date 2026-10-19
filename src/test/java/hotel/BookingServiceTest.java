@@ -64,4 +64,21 @@ class BookingServiceTest {
                         LocalDate.of(2026, 3, 15), LocalDate.of(2026, 3, 25))
         );
     }
+
+    // Индивидуальное задание ЛР №4 (вар. 7 — Отель):
+    // после завершения одной брони можно забронировать тот же номер снова.
+    @Test
+    void canBookAfterPreviousStay() {
+        service.book(guest, room,
+                LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 10));
+
+        Guest next = new Guest(2, "Петров");
+        Booking b2 = service.book(next, room,
+                LocalDate.of(2026, 5, 11), LocalDate.of(2026, 5, 20));
+
+        assertNotNull(b2);
+        assertEquals(2, repository.findAll().size());
+        assertEquals(next, b2.getGuest());
+        assertEquals(room, b2.getRoom());
+    }
 }

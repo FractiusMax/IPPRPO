@@ -11,27 +11,9 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                echo 'Stage: Checkout -> copy Maven project into workspace'
-                bat '''
-                    if not exist "C:\\Program Files\\Apache\\Maven\\apache-maven-3.9.16\\bin\\mvn.cmd" (
-                        echo [CHECKOUT FATAL] mvn.cmd ne nayden
-                        exit /b 1
-                    )
-                    if not exist "D:\\bbgg\\hotel\\pom.xml" (
-                        echo [CHECKOUT FATAL] net pom.xml v D:\\bbgg\\hotel
-                        exit /b 1
-                    )
-                    if exist src rmdir /S /Q src
-                    if exist target rmdir /S /Q target
-                    copy /Y "D:\\bbgg\\hotel\\pom.xml" pom.xml > NUL
-                    xcopy /E /I /Q /Y "D:\\bbgg\\hotel\\src" src > NUL
-                    echo [CHECKOUT OK] proekt skopirovan v workspace
-                    dir /B
-                '''
-            }
-        }
+        // Checkout uzhe vypolnyaet SCM-plagin Jenkins (Pipeline script from SCM)
+        // pri pomoschi 'Pipeline script from SCM' i ukazannogo Repository URL.
+        // Manualnyy 'bat copy' ne nuzhen — eto byl obkhod dlya LR3 bez Git.
 
         stage('Build') {
             steps {
