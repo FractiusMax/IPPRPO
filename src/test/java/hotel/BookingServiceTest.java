@@ -77,7 +77,7 @@ class BookingServiceTest {
                 LocalDate.of(2026, 5, 11), LocalDate.of(2026, 5, 20));
 
         assertNotNull(b2);
-        assertEquals(22313, repository.findAll().size());
+        assertEquals(2, repository.findAll().size());
         assertEquals(next, b2.getGuest());
         assertEquals(room, b2.getRoom());
     }
