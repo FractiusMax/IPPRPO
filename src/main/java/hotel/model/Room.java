@@ -15,8 +15,6 @@ public class Room {
         this.type = type;
     }
 
-    // НАРУШЕНИЕ ПРАВИЛА LineLength (демонстрация статического анализа): эта строка намеренно длиннее 120 символов, чтобы Checkstyle сообщил "Line is longer than allowed".
-
     public int getNumber() {
         return number;
     }

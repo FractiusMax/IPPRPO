@@ -158,13 +158,20 @@ if ($Phase -eq 'all' -or $Phase -eq 'failure') {
 if ($Phase -eq 'all' -or $Phase -eq 'fix') {
     Write-Host ''
     Write-Host '>>> ФАЗА 3: исправление -> commit -> push -> Jenkins -> SUCCESS'
-    Write-Host '    (нарушение устраняется: файл возвращается к корректному состоянию)'
+    Write-Host '    (нарушение устраняется: строка, нарушающая LineLength, удаляется)'
 
-    # Исправление = возврат файла с нарушением к корректному состоянию,
-    # зафиксированному в предыдущем коммите.
-    $target = 'src\main\java\hotel\model\Room.java'
-    Invoke-Git @('-C', $ProjectDir, 'checkout', '--', $target) | Out-Null
-    Write-Host "Нарушение устранено: $target возвращён к корректному состоянию."
+    # Исправление — удаляем строку с намеренно длинным комментарием.
+    # Важно: восстанавливать файл через `git checkout` нельзя — нарушение уже
+    # закоммичено, поэтому checkout вернул бы его обратно.
+    $target = Join-Path $ProjectDir 'src\main\java\hotel\model\Room.java'
+    $lines = [System.IO.File]::ReadAllLines($target, [System.Text.Encoding]::UTF8)
+    $kept = @($lines | Where-Object { $_ -notmatch 'НАРУШЕНИЕ ПРАВИЛА LineLength' })
+    if ($kept.Count -eq $lines.Count) {
+        Write-Warning 'Строка с нарушением не найдена — возможно, нарушение уже исправлено.'
+    }
+    $text = ($kept -join "`n") -replace "(`n){3,}", "`n`n"
+    [System.IO.File]::WriteAllText($target, $text.TrimEnd() + "`n", (New-Object System.Text.UTF8Encoding($false)))
+    Write-Host "Нарушение устранено: удалено $($lines.Count - $kept.Count) строк."
 
     Push-And-Wait 'ЛР №5 (Part 7): исправление нарушения правила Checkstyle' 'SUCCESS' | Out-Null
 }
