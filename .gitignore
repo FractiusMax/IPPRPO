@@ -14,40 +14,25 @@ out/
 .classpath
 .project
 
-# Прочее
+# Журналы приложения (Logback)
+logs/
 *.log
 
+# Архивы исходных проектов предыдущих лабораторных работ
 _lab3_source_xml/
-
 _lab3_source.zip/
-
-_lab4_source.zip/
-
-_lab4_src/
-
-_lab4_plain.txt/
-
 _lab3_src/
-
-lib/
-
-_lab3_source_xml/
-
-_lab3_source.zip/
-
 _lab4_source.zip/
-
 _lab4_src/
-
 _lab4_plain.txt/
-
-_lab3_src/
-
-lib/
-
-# Dobavleno dlya chistoty repo
-*.bak
+_lab5/
 _lab*.zip
 _lab*.docx
 _lab*.txt
+
+# Сторонние библиотеки и вспомогательные инструменты
+lib/
 _tools/
+
+# Прочее
+*.bak

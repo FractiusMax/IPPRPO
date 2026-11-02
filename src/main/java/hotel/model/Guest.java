@@ -2,9 +2,13 @@ package hotel.model;
 
 import java.util.Objects;
 
+/**
+ * Гость отеля.
+ */
 public class Guest {
-    private int id;
-    private String name;
+
+    private final int id;
+    private final String name;
 
     public Guest(int id, String name) {
         this.id = id;
@@ -21,8 +25,12 @@ public class Guest {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Guest)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Guest)) {
+            return false;
+        }
         Guest guest = (Guest) o;
         return id == guest.id;
     }

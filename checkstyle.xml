@@ -1,0 +1,258 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<!--
+    Конфигурация статического анализа (Maven Checkstyle Plugin) для проекта "Отель".
+    Лабораторная работа № 5, вариант 7.
+
+    Файл описывает НАБОР ПРАВИЛ, по которым Checkstyle проверяет исходный код.
+    Иерархия модулей:
+        Checker            — проверка файлов целиком (до и после TreeWalker)
+          TreeWalker       — проверка внутренней структуры Java-файла
+            <правило>      — конкретная проверка (LineLength, MethodName, ...)
+-->
+<module name="Checker">
+    <property name="charset" value="UTF-8"/>
+    <property name="severity" value="error"/>
+    <property name="fileExtensions" value="java"/>
+
+    <!-- ================= ФАЙЛОВЫЕ ПРАВИЛА (Checker) ================= -->
+
+    <!-- Файл должен заканчиваться переводом строки. -->
+    <module name="NewlineAtEndOfFile">
+        <property name="id" value="newLineAtEndOfFile"/>
+    </module>
+
+    <!-- В исходном коде запрещены символы табуляции. -->
+    <module name="FileTabCharacter">
+        <property name="id" value="fileTabCharacter"/>
+        <property name="eachLine" value="true"/>
+    </module>
+
+    <!-- Запрещены замыкающие пробелы и табуляции в конце строк. -->
+    <module name="RegexpSingleline">
+        <property name="id" value="noTrailingWhitespace"/>
+        <property name="format" value="[ \t]+$"/>
+    </module>
+
+    <!-- Максимальная длина строки исходного кода.
+         LineLength в современных версиях Checkstyle является проверкой уровня Checker
+         (в TreeWalker она запрещена), поэтому правило размещено здесь. -->
+    <module name="LineLength">
+        <property name="id" value="lineLength"/>
+        <property name="max" value="120"/>
+        <property name="ignorePattern" value="^\s*\*.*$"/>
+    </module>
+
+    <!-- ================= ПРАВИЛА СТРУКТУРЫ КОДА (TreeWalker) ================= -->
+    <module name="TreeWalker">
+
+        <!-- ========== Именование ========== -->
+
+        <!-- Имя метода: начинается со строчной буквы, только буквы и цифры. -->
+        <module name="MethodName">
+            <property name="id" value="methodName"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- Имя типа (класса/интерфейса): начинается с заглавной буквы. -->
+        <module name="TypeName">
+            <property name="id" value="typeName"/>
+            <property name="format" value="^[A-Z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- Имя поля экземпляра: начинается со строчной буквы. -->
+        <module name="MemberName">
+            <property name="id" value="memberName"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- Имя параметра: начинается со строчной буквы. -->
+        <module name="ParameterName">
+            <property name="id" value="parameterName"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- Имя локальной переменной: начинается со строчной буквы. -->
+        <module name="LocalVariableName">
+            <property name="id" value="localVariableName"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- Имя константы (static final): UPPER_SNAKE_CASE. -->
+        <module name="ConstantName">
+            <property name="id" value="constantName"/>
+            <property name="format" value="^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
+        </module>
+
+        <!-- ========== Размер конструкций ========== -->
+
+        <!-- Максимальная длина метода. -->
+        <module name="MethodLength">
+            <property name="id" value="methodLength"/>
+            <property name="max" value="150"/>
+            <property name="countEmpty" value="true"/>
+        </module>
+
+        <!-- Максимальное количество параметров метода. -->
+        <module name="ParameterNumber">
+            <property name="id" value="parameterNumber"/>
+            <property name="max" value="7"/>
+        </module>
+
+        <!-- ========== Оформление блоков ========== -->
+
+        <!-- Пустой блок должен содержать комментарий или текст. -->
+        <module name="EmptyBlock">
+            <property name="id" value="emptyBlock"/>
+            <property name="option" value="text"/>
+            <property name="tokens" value="LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY,
+                    LITERAL_DO, LITERAL_IF, LITERAL_ELSE, LITERAL_FOR,
+                    INSTANCE_INIT, STATIC_INIT, LITERAL_SWITCH, LITERAL_SYNCHRONIZED"/>
+        </module>
+
+        <!-- Все управляющие конструкции должны иметь фигурные скобки. -->
+        <module name="NeedBraces">
+            <property name="id" value="needBraces"/>
+        </module>
+
+        <!-- Открывающая фигурная скобка ставится в конце строки. -->
+        <module name="LeftCurly">
+            <property name="id" value="leftCurly"/>
+            <property name="option" value="eol"/>
+        </module>
+
+        <!-- Закрывающая фигурная скобка ставится на той же строке, что и else/catch. -->
+        <module name="RightCurly">
+            <property name="id" value="rightCurly"/>
+            <property name="option" value="same"/>
+        </module>
+
+        <!-- ========== Пробелы ========== -->
+
+        <!-- Пробелы вокруг операторов и ключевых слов. -->
+        <module name="WhitespaceAround">
+            <property name="id" value="whitespaceAround"/>
+            <property name="allowEmptyConstructors" value="true"/>
+            <property name="allowEmptyMethods" value="true"/>
+            <property name="allowEmptyTypes" value="true"/>
+            <property name="allowEmptyCatches" value="true"/>
+            <property name="allowEmptyLambdas" value="true"/>
+        </module>
+
+        <!-- Запрещён пробел после запятой, точки и т.п. -->
+        <module name="NoWhitespaceAfter">
+            <property name="id" value="noWhitespaceAfter"/>
+        </module>
+
+        <!-- Запрещён пробел перед запятой, точкой с запятой и т.п. -->
+        <module name="NoWhitespaceBefore">
+            <property name="id" value="noWhitespaceBefore"/>
+        </module>
+
+        <!-- Запрещены пробелы внутри пустых круглых скобок. -->
+        <module name="ParenPad">
+            <property name="id" value="parenPad"/>
+            <property name="option" value="nospace"/>
+        </module>
+
+        <!-- Приведение типов: (Type)value — без пробелов внутри круглых скобок. -->
+        <module name="TypecastParenPad">
+            <property name="id" value="typecastParenPad"/>
+            <property name="option" value="nospace"/>
+        </module>
+
+        <!-- Отступы: 4 пробела на уровень, 8 пробелов при переносе строки. -->
+        <module name="Indentation">
+            <property name="id" value="indentation"/>
+            <property name="basicOffset" value="4"/>
+            <property name="braceAdjustment" value="0"/>
+            <property name="caseIndent" value="4"/>
+            <property name="throwsIndent" value="4"/>
+            <property name="lineWrappingIndentation" value="8"/>
+            <property name="arrayInitIndent" value="4"/>
+        </module>
+
+        <!-- ========== Модификаторы и объявления ========== -->
+
+        <!-- Порядок модификаторов: public static final и т.п. -->
+        <module name="ModifierOrder">
+            <property name="id" value="modifierOrder"/>
+        </module>
+
+        <!-- Запрещены избыточные модификаторы (public в интерфейсе и т.п.). -->
+        <module name="RedundantModifier">
+            <property name="id" value="redundantModifier"/>
+        </module>
+
+        <!-- Класс без публичного конструктора должен быть final. -->
+        <module name="FinalClass">
+            <property name="id" value="finalClass"/>
+        </module>
+
+        <!-- Утилитный класс (только статические методы) не должен иметь публичный конструктор. -->
+        <module name="HideUtilityClassConstructor">
+            <property name="id" value="hideUtilityClassConstructor"/>
+        </module>
+
+        <!-- Поля должны быть private (или public static final). -->
+        <module name="VisibilityModifier">
+            <property name="id" value="visibilityModifier"/>
+        </module>
+
+        <!-- Если переопределён equals(), то должен быть переопределён и hashCode(). -->
+        <module name="EqualsHashCode">
+            <property name="id" value="equalsHashCode"/>
+        </module>
+
+        <!-- Переключатель должен иметь ветку default. -->
+        <module name="MissingSwitchDefault">
+            <property name="id" value="missingSwitchDefault"/>
+        </module>
+
+        <!-- default должен быть последней веткой switch. -->
+        <module name="DefaultComesLast">
+            <property name="id" value="defaultComesLast"/>
+        </module>
+
+        <!-- Одно выражение — одна строка. -->
+        <module name="OneStatementPerLine">
+            <property name="id" value="oneStatementPerLine"/>
+        </module>
+
+        <!-- Запрещено объявлять несколько переменных в одном операторе. -->
+        <module name="MultipleVariableDeclarations">
+            <property name="id" value="multipleVariableDeclarations"/>
+        </module>
+
+        <!-- Тип массива указывается перед именем: int[] a, а не int a[]. -->
+        <module name="ArrayTypeStyle">
+            <property name="id" value="arrayTypeStyle"/>
+        </module>
+
+        <!-- Числовой литерал long записывается через заглавную L. -->
+        <module name="UpperEll">
+            <property name="id" value="upperEll"/>
+        </module>
+
+        <!-- В одном файле — один верхнеуровневый класс. -->
+        <module name="OneTopLevelClass">
+            <property name="id" value="oneTopLevelClass"/>
+        </module>
+
+        <!-- ========== Импорты ========== -->
+
+        <!-- Запрещены неиспользуемые импорты. -->
+        <module name="UnusedImports">
+            <property name="id" value="unusedImports"/>
+        </module>
+
+        <!-- Запрещены дублирующиеся и java.lang-импорты. -->
+        <module name="RedundantImport">
+            <property name="id" value="redundantImport"/>
+        </module>
+
+    </module>
+</module>

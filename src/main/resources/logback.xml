@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Конфигурация Logback — реализации журналирования для проекта "Отель".
+    Схема работы: SLF4J Logger -> Logback -> Console / Log file.
+-->
+<configuration>
+
+    <!-- Формат строки журнала: время, поток, уровень, имя логгера, сообщение. -->
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+
+    <!-- Файл журнала. Путь можно переопределить переменной окружения HOTEL_LOG_FILE. -->
+    <property name="LOG_FILE" value="${HOTEL_LOG_FILE:-logs/hotel.log}"/>
+
+    <!-- Вывод в консоль. -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Вывод в файл журнала. -->
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_FILE}</file>
+        <append>true</append>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Уровни журналирования для классов предметной области. -->
+    <logger name="hotel" level="INFO"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+</configuration>

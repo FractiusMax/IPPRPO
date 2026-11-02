@@ -11,14 +11,34 @@ pipeline {
     }
 
     stages {
-        // Checkout uzhe vypolnyaet SCM-plagin Jenkins (Pipeline script from SCM)
-        // pri pomoschi 'Pipeline script from SCM' i ukazannogo Repository URL.
-        // Manualnyy 'bat copy' ne nuzhen — eto byl obkhod dlya LR3 bez Git.
+        // Checkout — выполняется SCM-плагином Jenkins (Pipeline script from SCM):
+        // Job забирает код из Git-репозитория по указанному Repository URL
+        // и ветке, после чего Jenkinsfile берётся из корня этого checkout.
+        stage('Checkout') {
+            steps {
+                echo 'Stage: Checkout -> SCM plugin (Pipeline script from SCM)'
+                echo "GIT_URL    = ${env.GIT_URL}"
+                echo "GIT_BRANCH = ${env.GIT_BRANCH}"
+                echo "GIT_COMMIT = ${env.GIT_COMMIT}"
+                bat 'dir /B'
+            }
+        }
 
         stage('Build') {
             steps {
                 echo 'Stage: Build -> mvn clean compile'
                 bat '"C:\\Program Files\\Apache\\Maven\\apache-maven-3.9.16\\bin\\mvn.cmd" -B -DskipTests clean compile'
+            }
+        }
+
+        // ЛР №5. Отдельный этап статического анализа.
+        // Команда соответствует настройке maven-checkstyle-plugin в pom.xml:
+        // goal check использует файл правил checkstyle.xml и завершает сборку
+        // с ошибкой при обнаружении нарушений.
+        stage('Static Analysis') {
+            steps {
+                echo 'Stage: Static Analysis -> mvn checkstyle:check'
+                bat '"C:\\Program Files\\Apache\\Maven\\apache-maven-3.9.16\\bin\\mvn.cmd" -B checkstyle:check'
             }
         }
 

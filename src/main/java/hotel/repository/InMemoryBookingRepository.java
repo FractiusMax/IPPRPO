@@ -6,8 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Реализация хранилища броней в памяти.
+ */
 public class InMemoryBookingRepository implements BookingRepository {
-    private List<Booking> bookings = new ArrayList<>();
+
+    private final List<Booking> bookings = new ArrayList<>();
 
     @Override
     public void save(Booking booking) {

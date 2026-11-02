@@ -2,12 +2,16 @@ package hotel.model;
 
 import java.time.LocalDate;
 
+/**
+ * Бронь номера: гость, номер и период проживания.
+ */
 public class Booking {
-    private int id;
-    private Guest guest;
-    private Room room;
-    private LocalDate checkIn;
-    private LocalDate checkOut;
+
+    private final int id;
+    private final Guest guest;
+    private final Room room;
+    private final LocalDate checkIn;
+    private final LocalDate checkOut;
 
     public Booking(int id, Guest guest, Room room, LocalDate checkIn, LocalDate checkOut) {
         if (checkIn == null || checkOut == null) {
@@ -43,10 +47,18 @@ public class Booking {
         return checkOut;
     }
 
+    /**
+     * Проверяет, пересекается ли период бронирования с заданным периодом.
+     *
+     * @param otherIn  дата заезда другого периода
+     * @param otherOut дата выезда другого периода
+     * @return true, если периоды пересекаются
+     */
     public boolean overlapsWith(LocalDate otherIn, LocalDate otherOut) {
         return checkIn.isBefore(otherOut) && otherIn.isBefore(checkOut);
     }
-     @Override
+
+    @Override
     public String toString() {
         return "Booking{id=" + id
                 + ", guest=" + guest

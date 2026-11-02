@@ -7,10 +7,28 @@ import hotel.repository.BookingRepository;
 import hotel.repository.InMemoryBookingRepository;
 import hotel.service.BookingService;
 import hotel.util.Config;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 
-public class Main {
+/**
+ * Точка входа приложения "Отель".
+ *
+ * <p>Демонстрирует все три уровня журналирования, предусмотренные заданием:</p>
+ * <ul>
+ *   <li>INFO — успешное бронирование;</li>
+ *   <li>WARN — попытка занять уже забронированный номер;</li>
+ *   <li>ERROR — ошибка выполнения операции.</li>
+ * </ul>
+ */
+public final class Main {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Main.class);
+
+    private Main() {
+    }
+
     public static void main(String[] args) {
         Config.print();
 
@@ -21,26 +39,31 @@ public class Main {
         Guest ivan = new Guest(1, "Иванов");
         Guest petrov = new Guest(2, "Петров");
 
-        Booking b1 = service.book(ivan, room,
+        // Сценарий 1 — успешная операция: сообщения уровня INFO.
+        Booking first = service.book(ivan, room,
                 LocalDate.of(2026, 1, 10), LocalDate.of(2026, 1, 15));
-        System.out.println("Создана бронь: " + b1);
+        LOG.info("Создана бронь: {}", first);
 
-        // индивидуал квест
+        // Сценарий 2 — проблемная ситуация: номер уже занят, уровень WARN.
         try {
             service.book(petrov, room,
                     LocalDate.of(2026, 1, 12), LocalDate.of(2026, 1, 18));
         } catch (IllegalStateException e) {
-            System.out.println("Ожидаемая ошибка: " + e.getMessage());
+            LOG.warn("Бронирование отклонено: {}", e.getMessage());
         }
 
-        Booking b2 = service.book(petrov, room,
-                LocalDate.of(2026, 1, 15), LocalDate.of(2026, 1, 20));
-        System.out.println("Создана бронь: " + b2);
+        // Сценарий 3 — ошибка выполнения операции: уровень ERROR.
+        try {
+            service.book(petrov, room,
+                    LocalDate.of(2026, 1, 20), LocalDate.of(2026, 1, 18));
+        } catch (IllegalArgumentException e) {
+            LOG.error("Бронирование не выполнено: {}", e.getMessage());
+        }
 
-        System.out.println("Всего броней: " + repository.findAll().size());
+        Booking second = service.book(petrov, room,
+                LocalDate.of(2026, 1, 15), LocalDate.of(2026, 1, 20));
+        LOG.info("Создана бронь: {}", second);
+
+        LOG.info("Всего броней: {}", repository.findAll().size());
     }
 }
-//scope
-//как тесты показать так чтобы они не учитывались в джар
-//жизненый цикл - порядок
-

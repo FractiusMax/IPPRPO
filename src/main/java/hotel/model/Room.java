@@ -2,9 +2,13 @@ package hotel.model;
 
 import java.util.Objects;
 
+/**
+ * Номер отеля: номер комнаты и её категория.
+ */
 public class Room {
-    private int number;
-    private String type;
+
+    private final int number;
+    private final String type;
 
     public Room(int number, String type) {
         this.number = number;
@@ -21,8 +25,12 @@ public class Room {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Room)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Room)) {
+            return false;
+        }
         Room room = (Room) o;
         return number == room.number;
     }

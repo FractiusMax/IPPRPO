@@ -11,8 +11,8 @@
 
     <packaging>jar</packaging>
 
-    <name>Hotel System (LR2)</name>
-    <description>Отель</description>
+    <name>Hotel System (LR5)</name>
+    <description>Отель — ЛР №5: статический анализ (Checkstyle) и журналирование (SLF4J + Logback)</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,6 +26,15 @@
         <maven.compiler-plugin.version>3.13.0</maven.compiler-plugin.version>
         <maven.surefire-plugin.version>3.2.5</maven.surefire-plugin.version>
         <maven.jar-plugin.version>3.4.1</maven.jar-plugin.version>
+        <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
+
+        <!-- ЛР №5: журналирование -->
+        <slf4j.version>2.0.20</slf4j.version>
+        <logback.version>1.6.6</logback.version>
+
+        <!-- ЛР №5: статический анализ -->
+        <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
+        <checkstyle.version>10.26.1</checkstyle.version>
     </properties>
 
     <dependencies>
@@ -34,6 +43,20 @@
             <artifactId>junit-jupiter</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <!-- Фасад журналирования: SLF4J API (Common Logging / Logging API). -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
+        <!-- Реализация журналирования: Logback (пишет в консоль и в файл). -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
         </dependency>
     </dependencies>
 
@@ -53,10 +76,82 @@
                 <version>${maven.surefire-plugin.version}</version>
             </plugin>
 
+            <!-- Копирование runtime-зависимостей в target/lib,
+                 чтобы собранный JAR запускался через java -jar. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>${maven-dependency-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>copy-runtime-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <includeScope>runtime</includeScope>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven.jar-plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>hotel.Main</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- ЛР №5. Требование 1: подключение статического анализа.
+                 goal           -> check (проверка кода с падением сборки при нарушениях)
+                 configLocation -> файл checkstyle.xml в корне проекта
+                 phase          -> verify: обычные mvn compile/test/package не прерываются,
+                                   а полная проверка выполняется перед установкой артефакта. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${maven-checkstyle-plugin.version}</version>
+                <dependencies>
+                    <!-- Своя версия Checkstyle: версия 9.3 из состава плагина
+                         не поддерживает современный синтаксис Java. -->
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>${checkstyle.version}</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <configLocation>${project.basedir}/checkstyle.xml</configLocation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <consoleOutput>true</consoleOutput>
+                    <logViolationsToConsole>true</logViolationsToConsole>
+                    <failOnViolation>true</failOnViolation>
+                    <violationSeverity>error</violationSeverity>
+                    <failsOnError>true</failsOnError>
+                    <outputFile>${project.build.directory}/checkstyle-result.xml</outputFile>
+                    <outputFileFormat>xml</outputFileFormat>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>checkstyle-validation</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
