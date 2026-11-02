@@ -88,15 +88,27 @@ function Wait-ForBuild {
 }
 
 function Invoke-Git([string[]]$GitArgs) {
+    # git пишет предупреждения (LF -> CRLF) в stderr, и при $ErrorActionPreference='Stop'
+    # PowerShell считает их фатальной ошибкой. Поэтому временно переключаем режим
+    # и опираемся на реальный код возврата git.
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
     $output = & git @GitArgs 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "git $($GitArgs -join ' ') завершился с кодом $LASTEXITCODE`n$output"
+    $code = $LASTEXITCODE
+    $ErrorActionPreference = $previous
+
+    if ($code -ne 0) {
+        throw "git $($GitArgs -join ' ') завершился с кодом $code`n$output"
     }
     return $output
 }
 
 function Push-And-Wait([string]$CommitMessage, [string]$Expect) {
     Write-Step "git add -> git commit -> git push ($CommitMessage)"
+
+    # Список уже существующих сборок снимаем ДО push — иначе Jenkins может
+    # успеть начать сборку между push и этим снимком, и мы будем ждать вечно.
+    $known = Get-ExistingBuildNumbers
 
     Invoke-Git @('-C', $ProjectDir, 'add', '-A') | Out-Null
     Invoke-Git @('-C', $ProjectDir, 'commit', '-m', $CommitMessage) | Out-Null
@@ -106,7 +118,6 @@ function Push-And-Wait([string]$CommitMessage, [string]$Expect) {
     Write-Host "Зафиксированный и отправленный commit: $sha"
     Write-Host "Ожидаемый результат сборки: $Expect"
 
-    $known = Get-ExistingBuildNumbers
     $build = Wait-ForBuild -Known $known -Sha $sha
 
     Write-Host ''
@@ -147,9 +158,13 @@ if ($Phase -eq 'all' -or $Phase -eq 'failure') {
 if ($Phase -eq 'all' -or $Phase -eq 'fix') {
     Write-Host ''
     Write-Host '>>> ФАЗА 3: исправление -> commit -> push -> Jenkins -> SUCCESS'
+    Write-Host '    (нарушение устраняется: файл возвращается к корректному состоянию)'
 
-    $demo = Join-Path $ProjectDir 'scripts\lr5-checkstyle-demo.ps1'
-    & powershell -ExecutionPolicy Bypass -File $demo | Out-Null
+    # Исправление = возврат файла с нарушением к корректному состоянию,
+    # зафиксированному в предыдущем коммите.
+    $target = 'src\main\java\hotel\model\Room.java'
+    Invoke-Git @('-C', $ProjectDir, 'checkout', '--', $target) | Out-Null
+    Write-Host "Нарушение устранено: $target возвращён к корректному состоянию."
 
     Push-And-Wait 'ЛР №5 (Part 7): исправление нарушения правила Checkstyle' 'SUCCESS' | Out-Null
 }
