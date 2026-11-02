@@ -10,16 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * Сервис бронирования номеров.
- *
- * <p>Репозиторий передаётся через конструктор — внедрение зависимости (DI),
- * благодаря чему сервис можно тестировать с любым хранилищем.</p>
- *
- * <p>Все значимые события предметной области фиксируются через SLF4J Logger:
- * обычные события — на уровне INFO, предупреждения — на уровне WARN,
- * ошибки выполнения операции — на уровне ERROR.</p>
- */
+
 public class BookingService {
 
     private static final Logger LOG = LoggerFactory.getLogger(BookingService.class);
