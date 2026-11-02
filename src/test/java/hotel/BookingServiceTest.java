@@ -57,7 +57,7 @@ class BookingServiceTest {
         service.book(guest, room,
                 LocalDate.of(2026, 3, 10), LocalDate.of(2026, 3, 20));
 
-        Guest other = new Guest(2, "Петров");
+        Guest other = new Guest(2123123, "Петров");
         // 15..25 пересекается с 10..20
         assertThrows(IllegalStateException.class, () ->
                 service.book(other, room,
