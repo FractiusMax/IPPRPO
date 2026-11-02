@@ -114,7 +114,7 @@ function Push-And-Wait([string]$CommitMessage, [string]$Expect) {
     Invoke-Git @('-C', $ProjectDir, 'commit', '-m', $CommitMessage) | Out-Null
     Invoke-Git @('-C', $ProjectDir, 'push', 'origin', 'main') | Out-Null
 
-    $sha = (Invoke-Git @('-C', $ProjectDir, 'rev-parse', 'HEAD'))[0].Trim()
+    $sha = ((Invoke-Git @('-C', $ProjectDir, 'rev-parse', 'HEAD')) | Out-String).Trim()
     Write-Host "Зафиксированный и отправленный commit: $sha"
     Write-Host "Ожидаемый результат сборки: $Expect"
 
