@@ -20,7 +20,7 @@ public class BookingService {
     public BookingService(BookingRepository repository) {
         this.repository = repository;
     }
-
+//hlkdfjshgljkdshgsjkdfghsdjfghdfjghsdgfhgfhjfdghjgfdhjdghjkgfsdhjkdfghjkhdgfjlklhjkgfsdhjkgfsdjhksgfdhjklfdghjgfdhjfgdjhsgfhjhjgsfhjlgfdshljgfdjgfdhjsfgdhjfgdjhfsghjdkllgfhjkjkhlfdglhjkgfsdhjfgdhjfgdhjgfhdjhjsklgfdjhkgfdjhgdfhjfhgdjhgdfhjfdgjhfgdhjhjgfdjhgfdjhgfdhjgfdhjfghjdhjfdghjfdghjgfdhjfgdhjfgdkhjlgfdhjkfdghjkgfdjhkgfdjkfjdghjfdgjhgfdjhdgfhjdgfhjhjgfdhjgfhglkjfhglkshgskljghsdjkghjkflshgjkdsfhgjk
     /**
      * Выполняет бронирование номера.
      *
