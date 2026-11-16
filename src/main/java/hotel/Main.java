@@ -153,7 +153,9 @@ public final class Main {
      * уже занятый номер и операцию с некорректными данными.
      *
      * <p>Даты в каждом цикле сдвигаются, поэтому сценарии повторяются, а счётчики
-     * метрик монотонно растут.</p>
+     * метрик монотонно растут. Кроме номера категории "Стандарт" бронируется номер
+     * категории "Люкс" — благодаря этому метрика бронирований по типу номера
+     * содержит несколько временных рядов.</p>
      *
      * @param service сервис бронирования
      * @param cycle   номер цикла, начиная с 1
@@ -162,6 +164,7 @@ public final class Main {
         LocalDate checkIn = LocalDate.of(2026, 1, 1).plusDays(10L * (cycle - 1));
         LocalDate checkOut = checkIn.plusDays(5);
         Room room = new Room(101, "Стандарт");
+        Room deluxe = new Room(202, "Люкс");
         Guest first = new Guest(1, "Иванов");
         Guest second = new Guest(2, "Петров");
 
@@ -169,6 +172,7 @@ public final class Main {
                 cycle, checkIn, checkOut);
 
         service.book(first, room, checkIn, checkOut);
+        service.book(first, deluxe, checkIn, checkOut);
 
         try {
             service.book(second, room, checkIn.plusDays(1), checkOut.plusDays(1));
