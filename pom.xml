@@ -12,7 +12,6 @@
     <packaging>jar</packaging>
 
     <name>Hotel System (LR6)</name>
-    <description>Отель — ЛР №6: мониторинг приложения (Micrometer + Prometheus Registry), статический анализ (Checkstyle) и журналирование (SLF4J + Logback)</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -28,15 +27,12 @@
         <maven.jar-plugin.version>3.4.1</maven.jar-plugin.version>
         <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
 
-        <!-- ЛР №5: журналирование -->
         <slf4j.version>2.0.20</slf4j.version>
         <logback.version>1.6.6</logback.version>
 
-        <!-- ЛР №5: статический анализ -->
         <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
         <checkstyle.version>10.26.1</checkstyle.version>
 
-        <!-- ЛР №6: мониторинг -->
         <micrometer.version>1.17.2</micrometer.version>
     </properties>
 
@@ -48,23 +44,18 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Фасад журналирования: SLF4J API (Common Logging / Logging API). -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
 
-        <!-- Реализация журналирования: Logback (пишет в консоль и в файл). -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
         </dependency>
 
-        <!-- ЛР №6: мониторинг. Micrometer — фасад работы с метриками в Java,
-             PrometheusMeterRegistry — адаптер, который переводит метрики Micrometer
-             в текстовый формат Prometheus и отдаёт их по HTTP на /metrics. -->
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
@@ -88,8 +79,6 @@
                 <version>${maven.surefire-plugin.version}</version>
             </plugin>
 
-            <!-- Копирование runtime-зависимостей в target/lib,
-                 чтобы собранный JAR запускался через java -jar. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -126,18 +115,11 @@
                 </configuration>
             </plugin>
 
-            <!-- ЛР №5. Требование 1: подключение статического анализа.
-                 goal           -> check (проверка кода с падением сборки при нарушениях)
-                 configLocation -> файл checkstyle.xml в корне проекта
-                 phase          -> verify: обычные mvn compile/test/package не прерываются,
-                                   а полная проверка выполняется перед установкой артефакта. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>${maven-checkstyle-plugin.version}</version>
                 <dependencies>
-                    <!-- Своя версия Checkstyle: версия 9.3 из состава плагина
-                         не поддерживает современный синтаксис Java. -->
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
                         <artifactId>checkstyle</artifactId>

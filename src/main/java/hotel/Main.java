@@ -17,20 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.time.LocalDate;
 
-/**
- * Точка входа приложения "Отель".
- *
- * <p>ЛР №6: приложение не только выполняет операции бронирования, но и предоставляет
- * метрики Prometheus по HTTP-адресу {@code /metrics}.</p>
- *
- * <p>Режимы запуска:</p>
- * <ul>
- *   <li>без аргументов — одноразовый прогон сценариев (успех, занятый номер, ошибка)
- *       и вывод текущих метрик в консоль;</li>
- *   <li>{@code --serve} — поднимает HTTP-сервер метрик и в цикле выполняет
- *       демонстрационные операции, чтобы Prometheus собирал живые значения.</li>
- * </ul>
- */
+
 public final class Main {
 
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
@@ -53,11 +40,7 @@ public final class Main {
     private Main() {
     }
 
-    /**
-     * Основной метод приложения.
-     *
-     * @param args аргументы командной строки
-     */
+
     public static void main(String[] args) {
         Config.print();
 
@@ -74,12 +57,7 @@ public final class Main {
         }
     }
 
-    /**
-     * Режим постоянно работающего приложения: HTTP-сервер метрик и цикл операций.
-     *
-     * @param service  сервис бронирования
-     * @param registry реестр метрик Prometheus
-     */
+
     private static void serve(BookingService service, PrometheusMeterRegistry registry) {
         int port = Config.getInt(METRICS_PORT_KEY, DEFAULT_METRICS_PORT);
         int interval = Config.getInt(DEMO_INTERVAL_KEY, DEFAULT_DEMO_INTERVAL_SECONDS);
@@ -112,11 +90,7 @@ public final class Main {
         }
     }
 
-    /**
-     * Выполняет одноразовый набор сценариев: успех, занятый номер, ошибка.
-     *
-     * @param service сервис бронирования
-     */
+
     private static void runScenarios(BookingService service) {
         Room room = new Room(101, "Стандарт");
         Guest ivan = new Guest(1, "Иванов");
@@ -148,18 +122,6 @@ public final class Main {
         LOG.info("Создана бронь: {}", second);
     }
 
-    /**
-     * Выполняет один демонстрационный цикл: успешное бронирование, попытку занять
-     * уже занятый номер и операцию с некорректными данными.
-     *
-     * <p>Даты в каждом цикле сдвигаются, поэтому сценарии повторяются, а счётчики
-     * метрик монотонно растут. Кроме номера категории "Стандарт" бронируется номер
-     * категории "Люкс" — благодаря этому метрика бронирований по типу номера
-     * содержит несколько временных рядов.</p>
-     *
-     * @param service сервис бронирования
-     * @param cycle   номер цикла, начиная с 1
-     */
     private static void runDemoCycle(BookingService service, int cycle) {
         LocalDate checkIn = LocalDate.of(2026, 1, 1).plusDays(10L * (cycle - 1));
         LocalDate checkOut = checkIn.plusDays(5);
@@ -187,11 +149,7 @@ public final class Main {
         }
     }
 
-    /**
-     * Выводит в журнал текущие значения метрик приложения в формате Prometheus.
-     *
-     * @param registry реестр метрик Prometheus
-     */
+
     private static void printMetrics(PrometheusMeterRegistry registry) {
         LOG.info("--- Текущие метрики приложения (формат Prometheus) ---");
         for (String line : registry.scrape().split("\n")) {

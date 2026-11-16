@@ -7,30 +7,6 @@ import io.micrometer.core.instrument.Timer;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Метрики приложения "Отель" (ЛР №6, мониторинг).
- *
- * <p>Класс инкапсулирует набор счётчиков и таймера, которые регистрируются в реестре
- * Micrometer. Имена заданы в формате Micrometer (с точками). Prometheus получает их
- * в формате с подчёркиваниями и с суффиксом {@code _total} для счётчиков, например
- * {@code application.operations} превращается в {@code application_operations_total}.</p>
- *
- * <p>Обязательные (общие) метрики задания:</p>
- * <ul>
- *   <li>{@code application_operations_total} — количество операций бронирования;</li>
- *   <li>{@code application_operations_success_total} — успешные операции;</li>
- *   <li>{@code application_operations_error_total} — неуспешные операции;</li>
- *   <li>{@code application_operations_duration_seconds} — длительность операции.</li>
- * </ul>
- *
- * <p>Индивидуальные метрики варианта 7 "Отель":</p>
- * <ul>
- *   <li>{@code hotel_bookings_total} — количество выполненных бронирований номеров;</li>
- *   <li>{@code hotel_bookings_conflict_total} — попытки забронировать занятый номер;</li>
- *   <li>{@code hotel_bookings_error_total} — ошибки выполнения операции бронирования;</li>
- *   <li>{@code hotel_bookings_by_room_type_total} — бронирования по типу номера.</li>
- * </ul>
- */
 public final class ApplicationMetrics {
 
     /** Общее количество операций. */
