@@ -18,6 +18,7 @@
 #   -ProjectDir   каталог проекта (по умолчанию D:\bbgg\hotel)
 #   -AppUrl       адрес endpoint'а метрик (по умолчанию http://localhost:8081/metrics)
 #   -PromUrl      адрес Prometheus (по умолчанию http://localhost:9090)
+#   -JavaExe      полный путь к java.exe (по умолчанию JDK 26)
 #   -KeepRunning  не останавливать приложение после демонстрации
 #   -SkipBuild    не пересобирать проект
 
@@ -25,6 +26,7 @@ param(
     [string]$ProjectDir = 'D:\bbgg\hotel',
     [string]$AppUrl = 'http://localhost:8081/metrics',
     [string]$PromUrl = 'http://localhost:9090',
+    [string]$JavaExe = 'C:\Program Files\Java\jdk-26.0.2.1\bin\java.exe',
     [switch]$KeepRunning,
     [switch]$SkipBuild
 )
@@ -33,6 +35,19 @@ $ErrorActionPreference = 'Stop'
 
 $Maven = 'C:\Program Files\Apache\Maven\apache-maven-3.9.16\bin\mvn.cmd'
 $Jar = Join-Path $ProjectDir 'target\hotel-system-1.0-SNAPSHOT.jar'
+
+# Приложение запускаем напрямую из JDK, а не через обёртку
+# C:\Program Files\Common Files\Oracle\Java\javapath\java.exe: обёртка
+# порождает дополнительный процесс-оболочку, из-за чего один и тот же
+# экземпляр приложения числится в диспетчере задач дважды.
+if (-not (Test-Path $JavaExe)) {
+    $fallback = (Get-Command java -ErrorAction SilentlyContinue).Source
+    if (-not $fallback) {
+        throw "Исполняемый файл java не найден: $JavaExe. Укажите путь ключом -JavaExe."
+    }
+    Write-Host "ВНИМАНИЕ: $JavaExe не найден, используется $fallback"
+    $JavaExe = $fallback
+}
 
 function Write-Step([string]$Text) {
     Write-Host ''
@@ -43,9 +58,10 @@ function Write-Step([string]$Text) {
 
 function Stop-RunningApp {
     # Работающее приложение держит открытыми файлы в target\lib, поэтому
-    # перед "mvn clean" его нужно остановить. В процессах Java на этой машине
-    # один и тот же экземпляр приложения может числиться дважды
-    # (обёртка javapath и сам JDK) — останавливаем оба.
+    # перед "mvn clean" его нужно остановить. Один и тот же экземпляр
+    # приложения может числиться в диспетчере задач дважды (например, если
+    # его раньше запускали через обёртку javapath), поэтому останавливаем
+    # все найденные процессы.
     $targets = @(Get-CimInstance Win32_Process -Filter "Name='java.exe'" |
         Where-Object { $_.CommandLine -like '*hotel-system*' })
     foreach ($item in $targets) {
@@ -76,7 +92,8 @@ if (-not $SkipBuild) {
 
 Write-Host ''
 Write-Host 'Шаг 3. Запуск приложения в режиме --serve'
-$process = Start-Process -FilePath 'java' `
+Write-Host "  Java: $JavaExe"
+$process = Start-Process -FilePath $JavaExe `
     -ArgumentList '-jar', $Jar, '--serve' `
     -WorkingDirectory $ProjectDir `
     -RedirectStandardOutput (Join-Path $ProjectDir 'logs\lr6-app.out.log') `
@@ -106,10 +123,28 @@ $response = Invoke-WebRequest -Uri $AppUrl -UseBasicParsing -TimeoutSec 15
 
 Write-Host ''
 Write-Host 'Шаг 5. Состояние Target в Prometheus'
-$targets = Invoke-RestMethod -Uri "$PromUrl/api/v1/targets?state=active" -TimeoutSec 15
-$targets.data.activeTargets | ForEach-Object {
+# Prometheus опрашивает приложение каждые 5 секунд, поэтому сразу после
+# перезапуска приложения Target ещё какое-то время остаётся в состоянии down.
+# Ждём, пока Prometheus выполнит успешный scrape.
+$target = $null
+$deadline = (Get-Date).AddSeconds(45)
+while ((Get-Date) -lt $deadline) {
+    $targets = Invoke-RestMethod -Uri "$PromUrl/api/v1/targets?state=active" -TimeoutSec 15
+    $target = $targets.data.activeTargets |
+        Where-Object { $_.labels.instance -like '*8081*' } |
+        Select-Object -First 1
+    if ($target -and $target.health -eq 'up') { break }
+    Start-Sleep -Seconds 2
+}
+if (-not $target) {
+    Write-Host '  Target приложения не найден в списке Prometheus.'
+} else {
     Write-Host ("  job={0}  instance={1}  health={2}  lastError='{3}'" -f `
-            $_.labels.job, $_.labels.instance, $_.health, $_.lastError)
+            $target.labels.job, $target.labels.instance, $target.health, $target.lastError)
+    if ($target.health -ne 'up') {
+        Write-Host '  ВНИМАНИЕ: Target не в состоянии up. Проверьте, запущено ли приложение'
+        Write-Host '  и открыт ли адрес http://localhost:8081/metrics.'
+    }
 }
 
 Write-Host ''
@@ -119,8 +154,12 @@ foreach ($query in @('application_operations_total', 'application_operations_suc
         'hotel_bookings_conflict_total', 'hotel_bookings_error_total')) {
     $encoded = [uri]::EscapeDataString($query)
     $result = Invoke-RestMethod -Uri "$PromUrl/api/v1/query?query=$encoded" -TimeoutSec 15
-    $value = $result.data.result[0].value[1]
-    Write-Host ("  {0,-38} = {1}" -f $query, $value)
+    if ($result.data.result.Count -gt 0) {
+        $value = $result.data.result[0].value[1]
+        Write-Host ("  {0,-38} = {1}" -f $query, $value)
+    } else {
+        Write-Host ("  {0,-38} = нет данных (Target ещё не собран Prometheus'ом)" -f $query)
+    }
 }
 
 Write-Host ''
