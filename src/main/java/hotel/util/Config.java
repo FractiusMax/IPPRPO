@@ -48,6 +48,27 @@ public final class Config {
     }
 
     /**
+     * Возвращает числовое значение параметра конфигурации.
+     *
+     * @param key          имя параметра
+     * @param defaultValue значение по умолчанию, если параметр отсутствует или не является числом
+     * @return значение параметра конфигурации
+     */
+    public static int getInt(String key, int defaultValue) {
+        String value = PROPS.getProperty(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            LOG.warn("Параметр '{}' имеет некорректное значение '{}', "
+                    + "используется значение по умолчанию {}", key, value, defaultValue);
+            return defaultValue;
+        }
+    }
+
+    /**
      * Выводит содержимое конфигурации в журнал на уровне INFO.
      */
     public static void print() {

@@ -1,5 +1,7 @@
 package hotel.service;
 
+import hotel.metrics.ApplicationMetrics;
+import hotel.metrics.MetricsRegistry;
 import hotel.model.Booking;
 import hotel.model.Guest;
 import hotel.model.Room;
@@ -7,6 +9,7 @@ import hotel.repository.BookingRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,11 +20,28 @@ public class BookingService {
 
     private final BookingRepository repository;
 
+    private final ApplicationMetrics metrics;
+
     public BookingService(BookingRepository repository) {
-        this.repository = repository;
+        this(repository, MetricsRegistry.getMetrics());
     }
+
+    /**
+     * Создаёт сервис бронирования с заданным набором метрик.
+     *
+     * @param repository хранилище броней
+     * @param metrics    метрики приложения, в которые отражаются результаты операций
+     */
+    public BookingService(BookingRepository repository, ApplicationMetrics metrics) {
+        this.repository = repository;
+        this.metrics = metrics;
+    }
+
     /**
      * Выполняет бронирование номера.
+     *
+     * <p>ЛР №6: результат операции отражается в метриках — общей, успешных, ошибочных
+     * и индивидуальных метриках предметной области "Отель".</p>
      *
      * @param guest    гость, для которого оформляется бронь
      * @param room     бронируемый номер
@@ -35,26 +55,59 @@ public class BookingService {
         LOG.info("Запрос на бронирование получен: гость={}, номер={}, заезд={}, выезд={}",
                 guest, room, checkIn, checkOut);
 
-        validateRequest(guest, room, checkIn, checkOut);
-
-        if (isRoomOccupied(room, checkIn, checkOut)) {
-            LOG.warn("Номер {} уже забронирован на запрошенные даты {} - {}",
-                    room.getNumber(), checkIn, checkOut);
-            throw new IllegalStateException(
-                    "Номер " + room.getNumber() + " уже забронирован на эти даты");
-        }
-
+        metrics.recordOperation();
+        long startedAt = System.nanoTime();
         try {
-            int id = repository.findAll().size() + 1;
-            Booking booking = new Booking(id, guest, room, checkIn, checkOut);
-            repository.save(booking);
+            validateRequest(guest, room, checkIn, checkOut);
+
+            if (isRoomOccupied(room, checkIn, checkOut)) {
+                LOG.warn("Номер {} уже забронирован на запрошенные даты {} - {}",
+                        room.getNumber(), checkIn, checkOut);
+                throw new RoomAlreadyBookedException(
+                        "Номер " + room.getNumber() + " уже забронирован на эти даты");
+            }
+
+            Booking booking = createBooking(guest, room, checkIn, checkOut);
+            metrics.recordSuccess();
+            metrics.recordBooking(room.getType());
             LOG.info("Бронь создана: {}", booking);
             return booking;
+        } catch (RoomAlreadyBookedException e) {
+            // Номер уже занят: операция отклонена, метрика конфликтов увеличивается.
+            metrics.recordError();
+            metrics.recordBookingConflict();
+            throw e;
+        } catch (IllegalArgumentException e) {
+            // Некорректные входные данные: ошибка выполнения операции.
+            metrics.recordError();
+            metrics.recordBookingError();
+            throw e;
         } catch (RuntimeException e) {
+            // Любая другая ошибка выполнения операции бронирования.
             LOG.error("Ошибка выполнения операции бронирования: гость={}, номер={}",
                     guest, room, e);
+            metrics.recordError();
+            metrics.recordBookingError();
             throw e;
+        } finally {
+            metrics.recordDuration(Duration.ofNanos(System.nanoTime() - startedAt));
         }
+    }
+
+    /**
+     * Создаёт и сохраняет бронь.
+     *
+     * @param guest    гость
+     * @param room     номер
+     * @param checkIn  дата заезда
+     * @param checkOut дата выезда
+     * @return созданная бронь
+     */
+    private Booking createBooking(Guest guest, Room room, LocalDate checkIn, LocalDate checkOut) {
+        int id = repository.findAll().size() + 1;
+        Booking booking = new Booking(id, guest, room, checkIn, checkOut);
+        repository.save(booking);
+        return booking;
     }
 
     /**
