@@ -1,23 +1,4 @@
-﻿# lr6-jenkins-demo.ps1
-# ЛР №6, Части 11 и 12 — полный цикл: изменение кода -> git -> Jenkins -> метрики.
-#
-# Скрипт выполняет:
-#   git add -> git commit -> git push -> ожидание автоматической сборки Jenkins
-#   (Job настроен на "Pipeline script from SCM" с SCMTrigger, опрос раз в 2 минуты,
-#   поэтому сборка запускается сама) -> проверка результата сборки.
-#
-# Запуск:
-#   powershell -ExecutionPolicy Bypass -File D:\bbgg\hotel\scripts\lr6-jenkins-demo.ps1 `
-#       -CommitMessage 'ЛР №6: мониторинг приложения'
-#
-# Ключи:
-#   -CommitMessage   сообщение коммита (обязательный параметр)
-#   -Expected        ожидаемый результат сборки: SUCCESS или FAILURE (по умолчанию SUCCESS)
-#   -Job             имя Job в Jenkins (по умолчанию Lab4-Hotel)
-#   -JenkinsHome     каталог JENKINS_HOME (по умолчанию C:\ProgramData\Jenkins\.jenkins)
-#   -TimeoutMinutes  сколько ждать завершения сборки (по умолчанию 12)
-#   -ProjectDir      каталог проекта (по умолчанию D:\bbgg\hotel)
-
+﻿
 param(
     [Parameter(Mandatory = $true)]
     [string]$CommitMessage,

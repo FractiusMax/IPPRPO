@@ -26,31 +26,13 @@ public class BookingService {
         this(repository, MetricsRegistry.getMetrics());
     }
 
-    /**
-     * Создаёт сервис бронирования с заданным набором метрик.
-     *
-     * @param repository хранилище броней
-     * @param metrics    метрики приложения, в которые отражаются результаты операций
-     */
+
     public BookingService(BookingRepository repository, ApplicationMetrics metrics) {
         this.repository = repository;
         this.metrics = metrics;
     }
 
-    /**
-     * Выполняет бронирование номера.
-     *
-     * <p>ЛР №6: результат операции отражается в метриках — общей, успешных, ошибочных
-     * и индивидуальных метриках предметной области "Отель".</p>
-     *
-     * @param guest    гость, для которого оформляется бронь
-     * @param room     бронируемый номер
-     * @param checkIn  дата заезда
-     * @param checkOut дата выезда
-     * @return созданная бронь
-     * @throws IllegalArgumentException если параметры запроса некорректны
-     * @throws IllegalStateException    если номер уже забронирован на эти даты
-     */
+
     public Booking book(Guest guest, Room room, LocalDate checkIn, LocalDate checkOut) {
         LOG.info("Запрос на бронирование получен: гость={}, номер={}, заезд={}, выезд={}",
                 guest, room, checkIn, checkOut);
@@ -73,17 +55,14 @@ public class BookingService {
             LOG.info("Бронь создана: {}", booking);
             return booking;
         } catch (RoomAlreadyBookedException e) {
-            // Номер уже занят: операция отклонена, метрика конфликтов увеличивается.
             metrics.recordError();
             metrics.recordBookingConflict();
             throw e;
         } catch (IllegalArgumentException e) {
-            // Некорректные входные данные: ошибка выполнения операции.
             metrics.recordError();
             metrics.recordBookingError();
             throw e;
         } catch (RuntimeException e) {
-            // Любая другая ошибка выполнения операции бронирования.
             LOG.error("Ошибка выполнения операции бронирования: гость={}, номер={}",
                     guest, room, e);
             metrics.recordError();
@@ -94,15 +73,7 @@ public class BookingService {
         }
     }
 
-    /**
-     * Создаёт и сохраняет бронь.
-     *
-     * @param guest    гость
-     * @param room     номер
-     * @param checkIn  дата заезда
-     * @param checkOut дата выезда
-     * @return созданная бронь
-     */
+
     private Booking createBooking(Guest guest, Room room, LocalDate checkIn, LocalDate checkOut) {
         int id = repository.findAll().size() + 1;
         Booking booking = new Booking(id, guest, room, checkIn, checkOut);
@@ -110,14 +81,7 @@ public class BookingService {
         return booking;
     }
 
-    /**
-     * Проверяет корректность входных данных бронирования.
-     *
-     * @param guest    гость
-     * @param room     номер
-     * @param checkIn  дата заезда
-     * @param checkOut дата выезда
-     */
+
     private void validateRequest(Guest guest, Room room, LocalDate checkIn, LocalDate checkOut) {
         if (guest == null || room == null) {
             LOG.error("Некорректный запрос на бронирование: не указан гость или номер");
@@ -134,14 +98,7 @@ public class BookingService {
         }
     }
 
-    /**
-     * Проверяет, свободен ли номер на запрошенный период.
-     *
-     * @param room     номер
-     * @param checkIn  дата заезда
-     * @param checkOut дата выезда
-     * @return true, если на этот период уже есть пересекающаяся бронь
-     */
+
     private boolean isRoomOccupied(Room room, LocalDate checkIn, LocalDate checkOut) {
         List<Booking> existing = repository.findByRoom(room.getNumber());
         for (Booking booking : existing) {

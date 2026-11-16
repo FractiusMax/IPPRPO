@@ -1,15 +1,4 @@
-﻿# lr6-promql-demo.ps1
-# ЛР №6, Часть 6 — работа с PromQL и Часть 9 — эксперимент с мониторингом.
-#
-# Скрипт:
-#   1. выполняет PromQL-запросы к Prometheus и печатает значения;
-#   2. снимает значения метрик дважды с интервалом в 15 секунд и показывает,
-#      как они изменились (доказательство того, что метрики связаны с работой
-#      приложения).
-#
-# Запуск:
-#   powershell -ExecutionPolicy Bypass -File D:\bbgg\hotel\scripts\lr6-promql-demo.ps1
-
+﻿
 param(
     [string]$PromUrl = 'http://localhost:9090',
     [int]$WaitSeconds = 15

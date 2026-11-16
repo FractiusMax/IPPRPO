@@ -25,10 +25,7 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Тесты мониторинга (ЛР №6): проверяют, что метрики действительно связаны
- * с работой приложения, а не просто имеют начальное значение.
- */
+
 class MetricsTest {
 
     private static final LocalDate CHECK_IN = LocalDate.of(2026, 4, 1);
@@ -117,11 +114,8 @@ class MetricsTest {
         double conflict = counterValue(ApplicationMetrics.BOOKINGS_CONFLICT);
         double bookingError = counterValue(ApplicationMetrics.BOOKINGS_ERROR);
 
-        // Все операции разбиваются на успешные и ошибочные.
         assertEquals(operations, success + error, 0.0001);
-        // Количество выполненных бронирований равно количеству успешных операций.
         assertEquals(success, counterValue(ApplicationMetrics.BOOKINGS), 0.0001);
-        // Ошибки операции делятся на конфликт и ошибку выполнения.
         assertEquals(error, conflict + bookingError, 0.0001);
     }
 

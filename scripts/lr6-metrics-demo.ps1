@@ -1,27 +1,4 @@
-﻿# lr6-metrics-demo.ps1
-# ЛР №6, Части 3-5 — демонстрация мониторинга приложения "Отель":
-#   сборка -> запуск в режиме --serve -> endpoint /metrics -> Target в Prometheus.
-#
-# Скрипт:
-#   1. останавливает ранее запущенный экземпляр приложения
-#      (иначе mvn clean не удалит JAR-библиотеки, занятые работающим процессом);
-#   2. собирает проект (mvn clean package);
-#   3. запускает приложение в режиме --serve (HTTP-сервер метрик на порту 8081);
-#   4. показывает ответ endpoint'а /metrics;
-#   5. показывает состояние Target в Prometheus (ожидается health=up);
-#   6. выполняет несколько PromQL-запросов.
-#
-# Запуск:
-#   powershell -ExecutionPolicy Bypass -File D:\bbgg\hotel\scripts\lr6-metrics-demo.ps1
-#
-# Ключи:
-#   -ProjectDir   каталог проекта (по умолчанию D:\bbgg\hotel)
-#   -AppUrl       адрес endpoint'а метрик (по умолчанию http://localhost:8081/metrics)
-#   -PromUrl      адрес Prometheus (по умолчанию http://localhost:9090)
-#   -JavaExe      полный путь к java.exe (по умолчанию JDK 26)
-#   -KeepRunning  не останавливать приложение после демонстрации
-#   -SkipBuild    не пересобирать проект
-
+﻿
 param(
     [string]$ProjectDir = 'D:\bbgg\hotel',
     [string]$AppUrl = 'http://localhost:8081/metrics',
@@ -36,10 +13,6 @@ $ErrorActionPreference = 'Stop'
 $Maven = 'C:\Program Files\Apache\Maven\apache-maven-3.9.16\bin\mvn.cmd'
 $Jar = Join-Path $ProjectDir 'target\hotel-system-1.0-SNAPSHOT.jar'
 
-# Приложение запускаем напрямую из JDK, а не через обёртку
-# C:\Program Files\Common Files\Oracle\Java\javapath\java.exe: обёртка
-# порождает дополнительный процесс-оболочку, из-за чего один и тот же
-# экземпляр приложения числится в диспетчере задач дважды.
 if (-not (Test-Path $JavaExe)) {
     $fallback = (Get-Command java -ErrorAction SilentlyContinue).Source
     if (-not $fallback) {
@@ -57,11 +30,6 @@ function Write-Step([string]$Text) {
 }
 
 function Stop-RunningApp {
-    # Работающее приложение держит открытыми файлы в target\lib, поэтому
-    # перед "mvn clean" его нужно остановить. Один и тот же экземпляр
-    # приложения может числиться в диспетчере задач дважды (например, если
-    # его раньше запускали через обёртку javapath), поэтому останавливаем
-    # все найденные процессы.
     $targets = @(Get-CimInstance Win32_Process -Filter "Name='java.exe'" |
         Where-Object { $_.CommandLine -like '*hotel-system*' })
     foreach ($item in $targets) {
@@ -123,9 +91,6 @@ $response = Invoke-WebRequest -Uri $AppUrl -UseBasicParsing -TimeoutSec 15
 
 Write-Host ''
 Write-Host 'Шаг 5. Состояние Target в Prometheus'
-# Prometheus опрашивает приложение каждые 5 секунд, поэтому сразу после
-# перезапуска приложения Target ещё какое-то время остаётся в состоянии down.
-# Ждём, пока Prometheus выполнит успешный scrape.
 $target = $null
 $deadline = (Get-Date).AddSeconds(45)
 while ((Get-Date) -lt $deadline) {

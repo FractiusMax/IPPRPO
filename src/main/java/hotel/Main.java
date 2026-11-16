@@ -22,19 +22,14 @@ public final class Main {
 
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
-    /** Аргумент запуска в режиме постоянно работающего сервера метрик. */
     private static final String SERVE_ARGUMENT = "--serve";
 
-    /** Ключ конфигурации с портом HTTP-сервера метрик. */
     private static final String METRICS_PORT_KEY = "metrics.port";
 
-    /** Ключ конфигурации с интервалом демонстрационного цикла в секундах. */
     private static final String DEMO_INTERVAL_KEY = "metrics.demo.interval.seconds";
 
-    /** Порт HTTP-сервера метрик по умолчанию. */
     private static final int DEFAULT_METRICS_PORT = 8081;
 
-    /** Интервал демонстрационного цикла по умолчанию, секунды. */
     private static final int DEFAULT_DEMO_INTERVAL_SECONDS = 5;
 
     private Main() {
@@ -96,12 +91,10 @@ public final class Main {
         Guest ivan = new Guest(1, "Иванов");
         Guest petrov = new Guest(2, "Петров");
 
-        // Сценарий 1 — успешная операция: сообщения уровня INFO.
         Booking first = service.book(ivan, room,
                 LocalDate.of(2026, 1, 10), LocalDate.of(2026, 1, 15));
         LOG.info("Создана бронь: {}", first);
 
-        // Сценарий 2 — проблемная ситуация: номер уже занят, уровень WARN.
         try {
             service.book(petrov, room,
                     LocalDate.of(2026, 1, 12), LocalDate.of(2026, 1, 18));
@@ -109,7 +102,6 @@ public final class Main {
             LOG.warn("Бронирование отклонено: {}", e.getMessage());
         }
 
-        // Сценарий 3 — ошибка выполнения операции: уровень ERROR.
         try {
             service.book(petrov, room,
                     LocalDate.of(2026, 1, 20), LocalDate.of(2026, 1, 18));

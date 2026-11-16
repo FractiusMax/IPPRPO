@@ -9,31 +9,22 @@ import java.util.concurrent.TimeUnit;
 
 public final class ApplicationMetrics {
 
-    /** Общее количество операций. */
     public static final String OPERATIONS = "application.operations";
 
-    /** Количество успешных операций. */
     public static final String OPERATIONS_SUCCESS = "application.operations.success";
 
-    /** Количество неуспешных операций. */
     public static final String OPERATIONS_ERROR = "application.operations.error";
 
-    /** Длительность выполнения операции. */
     public static final String OPERATIONS_DURATION = "application.operations.duration";
 
-    /** Количество выполненных бронирований номеров. */
     public static final String BOOKINGS = "hotel.bookings";
 
-    /** Попытки забронировать уже занятый номер. */
     public static final String BOOKINGS_CONFLICT = "hotel.bookings.conflict";
 
-    /** Ошибки выполнения операции бронирования. */
     public static final String BOOKINGS_ERROR = "hotel.bookings.error";
 
-    /** Количество бронирований в разрезе типа номера. */
     public static final String BOOKINGS_BY_ROOM_TYPE = "hotel.bookings.by.room.type";
 
-    /** Метка, по которой бронирования группируются по типу номера. */
     public static final String TAG_ROOM_TYPE = "room_type";
 
     private final MeterRegistry registry;
@@ -52,11 +43,7 @@ public final class ApplicationMetrics {
 
     private final Counter bookingsError;
 
-    /**
-     * Создаёт метрики и регистрирует их в указанном реестре.
-     *
-     * @param registry реестр Micrometer, в котором регистрируются метрики
-     */
+
     public ApplicationMetrics(MeterRegistry registry) {
         this.registry = registry;
         this.operations = Counter.builder(OPERATIONS)
@@ -83,48 +70,32 @@ public final class ApplicationMetrics {
                 .register(registry);
     }
 
-    /**
-     * @return реестр, в котором зарегистрированы метрики
-     */
+
     public MeterRegistry getRegistry() {
         return registry;
     }
 
-    /**
-     * Учитывает попытку выполнить операцию бронирования.
-     */
+
     public void recordOperation() {
         operations.increment();
     }
 
-    /**
-     * Учитывает успешно выполненную операцию бронирования.
-     */
+
     public void recordSuccess() {
         operationsSuccess.increment();
     }
 
-    /**
-     * Учитывает неуспешную операцию бронирования.
-     */
+
     public void recordError() {
         operationsError.increment();
     }
 
-    /**
-     * Учитывает длительность выполнения операции бронирования.
-     *
-     * @param duration время, затраченное на операцию
-     */
+
     public void recordDuration(Duration duration) {
         operationsDuration.record(duration.toMillis(), TimeUnit.MILLISECONDS);
     }
 
-    /**
-     * Учитывает успешное бронирование номера.
-     *
-     * @param roomType категория забронированного номера
-     */
+
     public void recordBooking(String roomType) {
         bookings.increment();
         Counter.builder(BOOKINGS_BY_ROOM_TYPE)
@@ -134,16 +105,12 @@ public final class ApplicationMetrics {
                 .increment();
     }
 
-    /**
-     * Учитывает попытку забронировать уже занятый номер.
-     */
+
     public void recordBookingConflict() {
         bookingsConflict.increment();
     }
 
-    /**
-     * Учитывает ошибку выполнения операции бронирования.
-     */
+
     public void recordBookingError() {
         bookingsError.increment();
     }

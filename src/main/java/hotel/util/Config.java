@@ -10,9 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.TreeSet;
 
-/**
- * Загрузка и вывод конфигурации приложения из ресурса config.properties.
- */
+
 public final class Config {
 
     private static final Logger LOG = LoggerFactory.getLogger(Config.class);
@@ -47,13 +45,7 @@ public final class Config {
         return PROPS.getProperty(key, defaultValue);
     }
 
-    /**
-     * Возвращает числовое значение параметра конфигурации.
-     *
-     * @param key          имя параметра
-     * @param defaultValue значение по умолчанию, если параметр отсутствует или не является числом
-     * @return значение параметра конфигурации
-     */
+
     public static int getInt(String key, int defaultValue) {
         String value = PROPS.getProperty(key);
         if (value == null) {
@@ -68,9 +60,7 @@ public final class Config {
         }
     }
 
-    /**
-     * Выводит содержимое конфигурации в журнал на уровне INFO.
-     */
+
     public static void print() {
         LOG.info("[Конфигурация из config.properties]");
         for (String name : new TreeSet<>(PROPS.stringPropertyNames())) {
